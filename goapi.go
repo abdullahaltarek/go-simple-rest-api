@@ -1,11 +1,16 @@
 package main
 
+//important packages
 import (
 	"net/http"
 	"encoding/json"
 	"fmt"
+	"log"
+	"time"
 )
 
+
+//data structure to hold person data
 type Person struct {
 	ID string `json:"id,omitempty"`
 	Firstname string `json:"firstname"`
@@ -13,6 +18,7 @@ type Person struct {
 	Address *Address `json:"address"`
 }
 
+//data structure to hold address data
 type Address struct {
 	City string `json:"city"`
 	State string `json:"state"`
@@ -20,34 +26,59 @@ type Address struct {
 
 var people []Person
 
+func JsonResponse(m string) []byte {
+	data := make(map[string]interface{})
+	data["msg"] = m
+	jsonOut, _ := json.Marshal(data)
+	return jsonOut
+}
+
+
+func Logger(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(time.Now(), r.Method, r.URL)
+		h.ServeHTTP(w, r)
+	})
+}
+
 func GetPerson(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/people/get/"):]
 	w.Header().Set("Content-Type", "application/json")
+
+	if r.Method != "GET" {
+		w.Write(JsonResponse("method not allowed"))
+		return
+	}
+
+	id := r.URL.Path[len("/people/get/"):]
 
 	for _, item := range people {
 		if item.ID == id {
-			fmt.Println(item.ID)
-			fmt.Println(id)
 			data, _ := json.Marshal(item)
 			w.Write(data)
 			return
 		}
 	}
-
-	data := make(map[string]interface{})
-	data["msg"] = "Not found"
-	jsonOut, _ := json.Marshal(data)
-	w.Write(jsonOut)
 }
 
 
 func GetPeople(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	if r.Method != "GET" {
+		w.Write(JsonResponse("method not allowed"))
+		return
+	}
+
 	json.NewEncoder(w).Encode(people)
 }
 
 
 func CreatePerson(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != "POST" {
+		w.Write(JsonResponse("method not allowed"))
+		return
+	}
+
 	var person Person
 	_ = json.NewDecoder(r.Body).Decode(&person)
 	fmt.Println(person)
@@ -55,10 +86,44 @@ func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(person)
 }
 
+func UpdatePerson(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != "PUT" {
+		w.Write(JsonResponse("method not allowed"))
+		return
+	}
+
+	id := r.URL.Path[len("/people/update/"):]
+
+	var personData Person
+
+	json.NewDecoder(r.Body).Decode(&personData)
+
+	for i, item := range people {
+		if item.ID == id {
+			if len(personData.Firstname) > 0 {
+				people[i].Firstname = personData.Firstname
+			}
+
+			if len(personData.Lastname) > 0 {
+				people[i].Lastname = personData.Lastname
+			}
+
+			json.NewEncoder(w).Encode(people[i])
+			return
+		}
+	}
+}
+
 
 func DeletePerson(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/people/delete/"):]
 	w.Header().Set("Content-Type", "application/json")
+	if r.Method != "DELETE" {
+		w.Write(JsonResponse("method not allowed"))
+		return
+	}
+
+	id := r.URL.Path[len("/people/delete/"):]
 
 	for i, item := range people {
 		if item.ID == id {
@@ -68,11 +133,9 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := make(map[string]interface{})
-	data["msg"] = "Not found"
-	jsonOut, _ := json.Marshal(data)
-	w.Write(jsonOut)
+	w.Write(JsonResponse("not found"))
 }
+
 
 func main() {
 	r := http.NewServeMux()
@@ -81,8 +144,9 @@ func main() {
 	r.HandleFunc("/people/get/", GetPerson)
 	r.HandleFunc("/people/create", CreatePerson)
 	r.HandleFunc("/people/delete/", DeletePerson)
+	r.HandleFunc("/people/update/", UpdatePerson)
 
-	http.ListenAndServe(":8075", r)
+	http.ListenAndServe(":8075", Logger(r))
 }
 
 func init() {
