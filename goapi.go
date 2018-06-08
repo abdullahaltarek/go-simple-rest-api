@@ -2,25 +2,24 @@ package main
 
 //important packages
 import (
-	"net/http"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 )
 
-
 //data structure to hold person data
 type Person struct {
-	ID string `json:"id,omitempty"`
-	Firstname string `json:"firstname"`
-	Lastname string `json:"lastname"`
-	Address *Address `json:"address"`
+	ID        string   `json:"id,omitempty"`
+	Firstname string   `json:"firstname"`
+	Lastname  string   `json:"lastname"`
+	Address   *Address `json:"address"`
 }
 
 //data structure to hold address data
 type Address struct {
-	City string `json:"city"`
+	City  string `json:"city"`
 	State string `json:"state"`
 }
 
@@ -32,7 +31,6 @@ func JsonResponse(m string) []byte {
 	jsonOut, _ := json.Marshal(data)
 	return jsonOut
 }
-
 
 func Logger(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +58,6 @@ func GetPerson(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func GetPeople(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != "GET" {
@@ -70,7 +67,6 @@ func GetPeople(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(people)
 }
-
 
 func CreatePerson(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -115,7 +111,6 @@ func UpdatePerson(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != "DELETE" {
@@ -136,7 +131,6 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	w.Write(JsonResponse("not found"))
 }
 
-
 func main() {
 	r := http.NewServeMux()
 
@@ -150,6 +144,6 @@ func main() {
 }
 
 func init() {
-	people = append(people, Person{ID:"1", Firstname:"Cyan", Lastname:"Tarek", Address:&Address{City:"Gazipur", State:"Dhaka"}})
-	people = append(people, Person{ID:"2", Firstname:"Amilin", Lastname:"Diazo"})
+	people = append(people, Person{ID: "1", Firstname: "Cyan", Lastname: "Tarek", Address: &Address{City: "Gazipur", State: "Dhaka"}})
+	people = append(people, Person{ID: "2", Firstname: "Amilin", Lastname: "Diazo"})
 }
