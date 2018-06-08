@@ -1,4 +1,4 @@
-# golang-simple-rest-api
+# Go Simple CRUD REST API
 
 Simple Go REST API for CRUD operations
 
