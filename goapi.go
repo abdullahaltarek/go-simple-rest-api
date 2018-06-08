@@ -56,6 +56,8 @@ func GetPerson(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	w.Write(JsonResponse("not found"))
 }
 
 func GetPeople(w http.ResponseWriter, r *http.Request) {
