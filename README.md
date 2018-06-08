@@ -23,3 +23,5 @@ Then you can access it from :8075 port for the above mentioned endpoints
 This is my very first GO Api.
 
 I am planning to develop API and full blown database driven application from next
+
+PS: Pardon me for the .idea directory, I've added it to the .gitignore file. But it's not working for some strange reason.
